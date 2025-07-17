@@ -1,16 +1,19 @@
 import logo from './logo.svg';
 import './App.css';
-import { use, useEffect, useState } from 'react';
+import { Suspense, use, useEffect, useState } from 'react';
 import { connectWebSocket } from './services/WebSocketClient';
+import DataList from './DataList';
 
 function App() {
   const [message, setMessage] = useState('');
   const [client, setClient] = useState(null);
   const [data, setData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const client = connectWebSocket((msg) => {
-      setData(prev => [...prev, msg]);
+      setTimeout(setData(prev => [...prev, msg]), 5000);
+      //setIsLoading(false);
     });
     setClient(client);
     return () => client.deactivate(); // clean up
@@ -35,14 +38,10 @@ function App() {
       <button onClick={sendMessage}>Send Message</button>
 
       <h3>Data Received</h3>
-      <ul>
-        {data.map((item, index) => (
-          <li key={index}>{item}</li>
-        ))
-        }
-      </ul>
-      
 
+      <Suspense fallback={<>Loading....</>}>
+        <DataList data={data} />
+      </Suspense>
     </div>
   );
 }
